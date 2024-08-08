@@ -1,0 +1,39 @@
+services:
+  db:
+    image: mysql:8.0.39-bookworm
+    container_name: bwapp_db
+    environment:
+      MYSQL_ROOT_PASSWORD: bwapp
+    networks:
+      - backend
+    volumes:
+      - ./bwapp_db:/var/lib/mysql
+
+  app:
+    build:
+      context: ./bwapp_app
+      dockerfile: Dockerfile
+    container_name: bwapp_app
+    volumes:
+      - ./bwapp_app/settings.php:/var/www/html/bWAPP/admin/settings.php
+    depends_on:
+      - db
+    networks:
+      - frontend
+      - backend
+
+  nginx:
+    image: nginx:1.27.0-bookworm
+    container_name: bwapp_nginx
+    volumes:
+      - ./bwapp_nginx/nginx.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - app
+    ports:
+      - "8080:80"
+    networks:
+      - frontend
+
+networks:
+  frontend:
+  backend:
